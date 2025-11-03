@@ -1,4 +1,6 @@
 #!/bin/bash
+# -*- coding: utf-8 -*-
+# Bash script fully LF-safe for Linux servers
 set -euo pipefail
 
 INSTALL_DIR="/root/dns"
@@ -8,18 +10,18 @@ cd "$INSTALL_DIR"
 echo "=== Updating system ==="
 apt-get update -y && apt-get upgrade -y
 
-echo "=== Installing minimal prerequisites ==="
-apt-get install -y curl jq dnsutils python3 python3-pip cron ca-certificates dos2unix
+echo "=== Installing prerequisites ==="
+apt-get install -y curl jq dnsutils python3 python3-pip cron ca-certificates
 
-# نصب Docker
+# Install Docker if missing
 if ! command -v docker &> /dev/null; then
     echo "=== Installing Docker ==="
     curl -fsSL https://get.docker.com -o get-docker.sh
-    sh get-docker.sh
+    /bin/bash get-docker.sh
     rm get-docker.sh
 fi
 
-# نصب Docker Compose
+# Install Docker Compose if missing
 if ! command -v docker-compose &> /dev/null; then
     echo "=== Installing Docker Compose ==="
     COMPOSE_VER=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r '.tag_name')
@@ -100,7 +102,6 @@ cat > update-ips.sh <<'EOF'
 set -euo pipefail
 LOG_FILE="/var/log/xbox-smartdns-update.log"
 DNSMASQ_CONF="/etc/dnsmasq.conf"
-TEMPLATE="/app/dnsmasq.conf.template"
 
 DOMAINS_AUTH=("xbox.com" "xboxlive.com" "login.live.com" "storeedgefd.dsx.mp.microsoft.com")
 DOMAINS_CDN=("assets1.xboxlive.com" "assets2.xboxlive.com" "dlassets.xboxlive.com" "download.xbox.com")
@@ -208,9 +209,8 @@ def index():
 @login_required
 def update(): subprocess.Popen(["/app/update-ips.sh"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL); return redirect(url_for("index"))
 app.run(host="0.0.0.0",port=4176)
-EOF
 
-echo "=== Building and starting Docker container ==="
+# Build and run container
 docker-compose build
 docker-compose up -d
 
