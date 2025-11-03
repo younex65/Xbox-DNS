@@ -9,7 +9,7 @@ echo "=== Updating system ==="
 apt-get update -y && apt-get upgrade -y
 
 echo "=== Installing minimal prerequisites ==="
-apt-get install -y curl jq dnsutils python3 python3-pip cron ca-certificates
+apt-get install -y curl jq dnsutils python3 python3-pip cron ca-certificates dos2unix
 
 # نصب Docker
 if ! command -v docker &> /dev/null; then
@@ -177,6 +177,7 @@ button:hover{background-color:#00e0b0;}</style></head><body><div class="login-bo
 </div></body></html>"""
 
 def login_required(f):
+    import functools
     @functools.wraps(f)
     def wrapper(*a,**k):
         if session.get("logged_in"): return f(*a,**k)
@@ -188,6 +189,7 @@ def login():
     error=None
     if request.method=="POST":
         u=request.form.get("username"); p=request.form.get("password")
+        from werkzeug.security import check_password_hash
         if u!=USER or not check_password_hash(PASSWORD_HASH,p): error="Invalid credentials"
         else: session["logged_in"]=True; session["user"]=u; return redirect(url_for("index"))
     return render_template_string(LOGIN_TEMPLATE,error=error)
