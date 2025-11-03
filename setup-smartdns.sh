@@ -39,7 +39,7 @@ COPY entrypoint.sh /app/entrypoint.sh
 COPY webview.py /app/webview.py
 RUN chmod +x /app/*.sh
 RUN (crontab -l 2>/dev/null; echo "0 */6 * * * /app/update-ips.sh >> /var/log/xbox-smartdns-update.log 2>&1") | crontab -
-EXPOSE 53/udp 53/tcp 4176
+EXPOSE 53/udp 53/tcp 4000
 ENTRYPOINT ["/app/entrypoint.sh"]
 EOF
 
@@ -52,7 +52,7 @@ services:
     ports:
       - "53:53/udp"
       - "53:53/tcp"
-      - "4176:4176"
+      - "4000:4000"
     volumes:
       - ./data:/var/log
 EOF
@@ -136,7 +136,7 @@ def run():
     return redirect("/")
     
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=4176)
+    app.run(host="0.0.0.0", port=4000)
 EOF
 
 # اجرای Docker Compose
@@ -146,10 +146,11 @@ docker compose up -d --build
 
 echo "✅ راه‌اندازی کامل شد!"
 echo "--------------------------------------"
-echo "🌐 لاگ‌پنل:  http://<IP سرور>:4176"
+echo "🌐 لاگ‌پنل:  http://<IP سرور>:4000"
 echo "👤 یوزرنیم: YouneX"
 echo "🔒 پسورد:   @YouneS@1365"
 echo "--------------------------------------"
 echo "🧪 تست اولیه DNS:"
 dig @127.0.0.1 xbox.com | head -n 5
+
 
