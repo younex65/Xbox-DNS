@@ -8,26 +8,32 @@ cd "$INSTALL_DIR"
 echo "=== Updating system ==="
 apt-get update -y && apt-get upgrade -y
 
-echo "=== Installing minimal prerequisites ==="
+echo "=== Installing prerequisites ==="
 apt-get install -y curl jq dnsutils python3 python3-pip cron ca-certificates
 
 # نصب Docker
 if ! command -v docker &> /dev/null; then
-    echo "=== Installing Docker ==="
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sh get-docker.sh
-    rm get-docker.sh
+  echo "=== Installing Docker ==="
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  sh get-docker.sh
+  rm get-docker.sh
 fi
 
 # نصب Docker Compose
 if ! command -v docker-compose &> /dev/null; then
-    echo "=== Installing Docker Compose ==="
-    COMPOSE_VER=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r '.tag_name')
-    curl -L "https://github.com/docker/compose/releases/download/$COMPOSE_VER/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
+  echo "=== Installing Docker Compose ==="
+  COMPOSE_VER=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r '.tag_name')
+  curl -L "https://github.com/docker/compose/releases/download/$COMPOSE_VER/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  chmod +x /usr/local/bin/docker-compose
 fi
 
 echo "=== Creating project files ==="
+
+# فایل تنظیمات کاربر (یوزر و پسورد)
+cat > config.env <<'EOF'
+SMARTDNS_USER=admin
+SMARTDNS_PASS=123456
+EOF
 
 # dnsmasq.conf.template
 cat > dnsmasq.conf.template <<'EOF'
@@ -55,9 +61,11 @@ services:
     ports:
       - "53:53/udp"
       - "4000:4000/tcp"
-    environment:
-      - SMARTDNS_USER=admin
-      - SMARTDNS_PASS=123456
+    env_file:
+      - ./config.env
+    volumes:
+      - ./webview.py:/app/webview.py
+      - ./config.env:/app/config.env
     restart: unless-stopped
 EOF
 
@@ -139,37 +147,66 @@ log "Update finished."
 EOF
 chmod +x update-ips.sh
 
-# webview.py
+# webview.py (با قابلیت تغییر یوزر و پسورد)
 cat > webview.py <<'EOF'
 from flask import Flask, request, redirect, url_for, session, render_template_string
-import subprocess, functools, os
+import subprocess, functools, os, re
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = "xbox-smartdns-secret"
 
-USER = "admin"
-PASS = "123456"
+CONFIG_PATH = "/app/config.env"
+
+def load_credentials():
+    user, pwd = "admin", "123456"
+    if os.path.exists(CONFIG_PATH):
+        with open(CONFIG_PATH) as f:
+            for line in f:
+                if line.startswith("SMARTDNS_USER="): user = line.strip().split("=",1)[1]
+                elif line.startswith("SMARTDNS_PASS="): pwd = line.strip().split("=",1)[1]
+    return user, pwd
+
+def save_credentials(u, p):
+    with open(CONFIG_PATH, "w") as f:
+        f.write(f"SMARTDNS_USER={u}\nSMARTDNS_PASS={p}\n")
+
+USER, PASS = load_credentials()
 PASSWORD_HASH = generate_password_hash(PASS)
 
-TEMPLATE = """<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"><title>Xbox SmartDNS Panel</title>
+TEMPLATE = """<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Xbox SmartDNS Panel</title>
 <style>body{background:#121212;color:#f0f0f0;text-align:center;font-family:sans-serif;}
 .container{max-width:900px;margin:30px auto;padding:20px;background:#1e1e1e;border-radius:8px;}
 textarea{width:100%;height:360px;background:#000;color:#0f0;font-family:monospace;font-size:13px;border-radius:5px;padding:10px;}
 button{background-color:#00bfa5;border:none;color:white;padding:10px 20px;margin-top:10px;border-radius:5px;cursor:pointer;font-size:16px;}
 button:hover{background-color:#00e0b0;}.logout{background:#d32f2f;}</style></head>
 <body><div class="container"><h2>Xbox SmartDNS Panel</h2>
-<p>Logged in as: {{ user }}</p><form method="post" action="/update"><button>Update IPs Now</button></form>
+<p>Logged in as: {{ user }}</p>
+<form method="post" action="/update"><button>Update IPs Now</button></form>
+<form method="get" action="/change-password"><button>Change Username / Password</button></form>
 <h3>Latest Logs</h3><textarea readonly>{{ logs }}</textarea>
 <form method="post" action="/logout"><button class="logout">Logout</button></form></div></body></html>"""
+
+CHANGE_TEMPLATE = """<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Change Credentials</title>
+<style>body{background:#121212;color:#f0f0f0;text-align:center;font-family:sans-serif;}
+form{background:#1e1e1e;border-radius:8px;padding:30px;margin:100px auto;width:340px;}
+input{width:90%;padding:10px;margin:10px 0;border-radius:5px;border:1px solid #444;background:#000;color:#0f0;}
+button{background:#00bfa5;border:none;color:white;padding:10px 20px;border-radius:5px;cursor:pointer;}
+button:hover{background:#00e0b0;}</style></head><body>
+<form method="post">
+<h2>Change Credentials</h2>
+<input name="new_user" placeholder="New Username" required><br>
+<input name="new_pass" type="password" placeholder="New Password" required><br>
+<button type="submit">Save</button><br><br>
+<a href="/">⬅ Back</a>
+</form></body></html>"""
 
 LOGIN_TEMPLATE = """<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Login</title>
 <style>body{background:#121212;color:#f0f0f0;text-align:center;font-family:sans-serif;}
 .login-box{background:#1e1e1e;border-radius:8px;padding:30px;margin:100px auto;width:320px;}
 input{width:90%;padding:10px;margin:10px 0;border-radius:5px;border:1px solid #444;background:#000;color:#0f0;}
 button{background:#00bfa5;border:none;color:white;padding:10px 20px;border-radius:5px;cursor:pointer;font-size:16px;}
-button:hover{background-color:#00e0b0;}</style></head><body><div class="login-box">
+button:hover{background:#00e0b0;}</style></head><body><div class="login-box">
 <h2>SmartDNS Login</h2><form method="post">
 <input name="username" placeholder="Username" required><br>
 <input name="password" type="password" placeholder="Password" required><br>
@@ -185,6 +222,7 @@ def login_required(f):
 
 @app.route("/login", methods=["GET","POST"])
 def login():
+    global USER, PASS, PASSWORD_HASH
     error=None
     if request.method=="POST":
         u=request.form.get("username"); p=request.form.get("password")
@@ -205,6 +243,21 @@ def index():
 @app.route("/update",methods=["POST"])
 @login_required
 def update(): subprocess.Popen(["/app/update-ips.sh"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL); return redirect(url_for("index"))
+
+@app.route("/change-password",methods=["GET","POST"])
+@login_required
+def change_password():
+    global USER, PASS, PASSWORD_HASH
+    if request.method=="POST":
+        new_user=request.form.get("new_user"); new_pass=request.form.get("new_pass")
+        if not new_user or not new_pass: return "Invalid input",400
+        save_credentials(new_user,new_pass)
+        USER, PASS = new_user, new_pass
+        PASSWORD_HASH = generate_password_hash(PASS)
+        session.clear()
+        return redirect(url_for("login"))
+    return render_template_string(CHANGE_TEMPLATE)
+
 app.run(host="0.0.0.0",port=4000)
 EOF
 
@@ -212,10 +265,9 @@ echo "=== Building and starting Docker container ==="
 docker-compose build
 docker-compose up -d
 
-echo "=== Testing DNS resolution inside container ==="
-dig_result=$(docker exec xbox-smartdns-hybrid dig +short xbox.com || echo "Failed")
-echo "DNS test result for xbox.com: $dig_result"
+echo "=== DNS test ==="
+docker exec xbox-smartdns-hybrid dig +short xbox.com || echo "DNS test failed"
 
-echo "=== Deployment finished ==="
-echo "Web panel: http://<server-ip>:4000 (Username: admin / Password: 123456)"
-
+echo "=== Setup complete ==="
+echo "Web panel: http://<server-ip>:4000"
+echo "Default login → Username: admin | Password: 123456"
