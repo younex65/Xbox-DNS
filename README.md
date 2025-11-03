@@ -8,3 +8,5 @@
 
 
 bash <(curl -fsSL https://raw.githubusercontent.com/younex65/Xbox-DNS/setup-smartdns.sh)
+
+<pre> ## 🚀 نصب سریع ```bash <(curl -fsSL https://raw.githubusercontent.com/younex65/Xbox-DNS/setup-smartdns.sh) ``` </pre>
