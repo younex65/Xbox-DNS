@@ -10,3 +10,14 @@
 bash <(curl -fsSL https://raw.githubusercontent.com/younex65/Xbox-DNS/setup-smartdns.sh)
 
 ```bash <(curl -fsSL https://raw.githubusercontent.com/younex65/Xbox-DNS/setup-smartdns.sh) ```
+
+
+# Xbox DNS Installer
+
+🌀 اسکریپت تنظیم خودکار DNS برای Xbox
+
+## 🚀 نصب سریع
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/your-username/xbox-dns-installer/main/xbox-dns.sh)
+
