@@ -22,5 +22,5 @@ bash <(curl -fsSL https://raw.githubusercontent.com/younex65/Xbox-DNS/setup-smar
 یوز به صورت پیش فرض admin و پسورد 12345 قرار داده شده
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/your-username/xbox-dns-installer/main/xbox-dns.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/younex65/Xbox-DNS/setup-smartdns.sh)
 
