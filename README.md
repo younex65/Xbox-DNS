@@ -8,5 +8,6 @@
 یوز به صورت پیش فرض admin و پسورد 12345 قرار داده شده
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/younex65/Xbox-DNS/refs/heads/main/setup-smartdns.sh)
+bash <(curl -fsSL curl -fsSL https://github.com/younex65/Xbox-DNS/raw/V1.0/install-and-deploy.sh | sudo bash
+)
 
