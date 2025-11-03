@@ -212,8 +212,8 @@ echo "=== Building and starting Docker container ==="
 docker-compose build
 docker-compose up -d
 
-echo "=== Testing DNS resolution ==="
-dig_result=$(dig @127.0.0.1 xbox.com +short || echo "Failed")
+echo "=== Testing DNS resolution inside container ==="
+dig_result=$(docker exec xbox-smartdns-hybrid dig +short xbox.com || echo "Failed")
 echo "DNS test result for xbox.com: $dig_result"
 
 echo "=== Deployment finished ==="
