@@ -87,8 +87,8 @@ cat > webview.py <<'EOF'
 from flask import Flask, render_template_string, redirect, request
 import subprocess, os, base64
 
-USERNAME = "YouneX"
-PASSWORD = "@YouneS@1365"
+USERNAME = "admin"
+PASSWORD = "12345"
 
 app = Flask(__name__)
 
@@ -152,3 +152,4 @@ echo "🔒 پسورد:   @YouneS@1365"
 echo "--------------------------------------"
 echo "🧪 تست اولیه DNS:"
 dig @127.0.0.1 xbox.com | head -n 5
+
