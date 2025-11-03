@@ -54,10 +54,10 @@ services:
       - NET_ADMIN
     ports:
       - "53:53/udp"
-      - "4176:4176/tcp"
+      - "4000:4000/tcp"
     environment:
-      - SMARTDNS_USER=YouneX
-      - SMARTDNS_PASS=@YouneS@1365
+      - SMARTDNS_USER=admin
+      - SMARTDNS_PASS=123456
     restart: unless-stopped
 EOF
 
@@ -76,7 +76,7 @@ COPY webview.py /app/webview.py
 RUN chmod +x /app/*.sh
 RUN (crontab -l 2>/dev/null; echo "0 */12 * * * /app/update-ips.sh >> /var/log/xbox-smartdns-update.log 2>&1") | crontab -
 EXPOSE 53/udp
-EXPOSE 4176/tcp
+EXPOSE 4000/tcp
 ENTRYPOINT ["/app/entrypoint.sh"]
 EOF
 
@@ -148,8 +148,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.secret_key = "xbox-smartdns-secret"
 
-USER = "YouneX"
-PASS = "@YouneS@1365"
+USER = "admin"
+PASS = "123456"
 PASSWORD_HASH = generate_password_hash(PASS)
 
 TEMPLATE = """<!DOCTYPE html><html lang="en"><head>
@@ -205,7 +205,7 @@ def index():
 @app.route("/update",methods=["POST"])
 @login_required
 def update(): subprocess.Popen(["/app/update-ips.sh"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL); return redirect(url_for("index"))
-app.run(host="0.0.0.0",port=4176)
+app.run(host="0.0.0.0",port=4000)
 EOF
 
 echo "=== Building and starting Docker container ==="
@@ -217,4 +217,5 @@ dig_result=$(docker exec xbox-smartdns-hybrid dig +short xbox.com || echo "Faile
 echo "DNS test result for xbox.com: $dig_result"
 
 echo "=== Deployment finished ==="
-echo "Web panel: http://<server-ip>:4176 (Username: YouneX / Password: @YouneS@1365)"
+echo "Web panel: http://<server-ip>:4000 (Username: admin / Password: 123456)"
+
