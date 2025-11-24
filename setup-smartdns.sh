@@ -195,12 +195,12 @@ cat > templates/index.html << 'EOF'
       <button id="openChange" class="btn secondary">Change Username / Password</button>
 	  
 	    <!-- Theme switch (iOS style toggle) -->
-<div class="theme-switch-wrapper">
-  <label class="theme-switch">
-    <input type="checkbox" id="themeToggle">
-    <span class="slider round"></span>
-  </label>
-</div>
+#<div class="theme-switch-wrapper">
+ # <label class="theme-switch">
+   # <input type="checkbox" id="themeToggle">
+  #  <span class="slider round"></span>
+#  </label>
+#</div>
 
       <form method="post" action="/logout">
         <button class="btn logout" type="submit">Logout</button>
