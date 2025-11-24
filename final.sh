@@ -193,6 +193,14 @@ cat > templates/index.html << 'EOF'
       </form>
 
       <button id="openChange" class="btn secondary">Change Username / Password</button>
+	  
+	    <!-- Theme switch (iOS style toggle) -->
+<div class="theme-switch-wrapper">
+  <label class="theme-switch">
+    <input type="checkbox" id="themeToggle">
+    <span class="slider round"></span>
+  </label>
+</div>
 
       <form method="post" action="/logout">
         <button class="btn logout" type="submit">Logout</button>
@@ -307,7 +315,54 @@ cat > static/panel.css <<'EOF'
 :root{
   --bg:#0f1720; --card:#0b1220; --muted:#9aa4b2; --accent:#00c8b8; --danger:#ff6b6b;
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  --btn-bg:#0b1220; --btn-color:#d7eefb; /* light theme button default */
 }
+
+/* -------------- DARK THEME -------------- */
+body.dark{
+  --bg:#0f1720; 
+  --card:#0b1220; 
+  --muted:#9aa4b2; 
+  --accent:#00c8b8; 
+  --danger:#ff6b6b;
+  --btn-bg:#00c8b8;
+  --btn-color:#012a2a;
+}
+
+body.dark .btn.logout{
+  background: var(--danger);
+  color: #fff;
+}
+
+body.dark .container{background: rgba(255,255,255,0.02);}
+body.dark .card{background: rgba(255,255,255,0.02);}
+body.dark .logs{background: #02040a; color:#bfe8c9;}
+body.dark .modal{background: #07111a;}
+body.dark .input{background: #041122; color: #d7eefb;}
+body.dark .link{color: var(--accent);}
+
+/* -------------- LIGHT THEME -------------- */
+body.light{
+  --bg:#e0e0e0;
+  --card:#ffffff;
+  --muted:#555555;
+  --accent:#0b1220;
+  --danger:#ff6b6b;
+  --btn-bg:#0b1220;
+  --btn-color:#e0e0e0;
+}
+
+body.light .btn.logout{
+  background: var(--danger);
+  color: #fff;
+}
+
+body.light .container{background: rgba(255,255,255,0.8);}
+body.light .card{background: rgba(255,255,255,0.9);}
+body.light .logs{background: #f0f0f0; color:#0b1220;}
+body.light .modal{background:#f5f5f5;}
+body.light .input{background:#ffffff; color:#0b1220;}
+body.light .link{color: var(--accent);}
 
 body{
   margin:0;
@@ -320,7 +375,7 @@ body{
   max-width:980px;
   margin:28px auto;
   padding:20px;
-  background:rgba(255,255,255,0.02);
+  background:var(--card);
   border-radius:12px;
   box-shadow:0 6px 24px rgba(2,6,23,0.6);
   border:1px solid rgba(255,255,255,0.03);
@@ -337,35 +392,40 @@ body{
   font-weight:700;color:#021;box-shadow:0 6px 18px rgba(0,0,0,0.5);
 }
 .title{font-size:20px;font-weight:600;}
-.logged{font-size:12px;color:#9aa4b2;}
+.logged{font-size:12px;color:var(--muted);}
 
 .controls{display:flex;gap:10px;align-items:center;}
 .btn{
   padding:10px 14px;border:none;border-radius:10px;font-weight:600;
   cursor:pointer;min-width:140px;display:flex;align-items:center;justify-content:center;
+  background: var(--btn-bg);
+  color: var(--btn-color);
 }
-.btn.primary,.btn.secondary{background:var(--accent);color:#012a2a;}
+.btn.primary,.btn.secondary{background:var(--btn-bg);color:var(--btn-color);}
 .btn.logout{background:var(--danger);color:#fff;min-width:110px;}
 .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.05);color:var(--muted);}
 
 .row{display:flex;gap:12px;margin-top:18px;}
 .card{
-  background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;
+  background:var(--card);
+  padding:14px;border-radius:10px;
   border:1px solid rgba(255,255,255,0.02);
 }
 .card.big{flex:1.4}
 .card.small{flex:0.6}
 
 .logs{
-  height:420px;overflow:auto;background:#02040a;border-radius:8px;padding:12px;
-  font-family:var(--mono);font-size:13px;line-height:1.45;color:#bfe8c9;
+  height:420px;overflow:auto;
+  background: var(--card);
+  border-radius:8px;padding:12px;
+  font-family:var(--mono);font-size:13px;line-height:1.45;color:var(--btn-color);
 }
 
 .footer{font-size:13px;color:var(--muted);margin-top:8px;text-align:right}
-.link{color:var(--accent);text-decoration:none}
+.link{text-decoration:none}
 .quick{display:flex;flex-direction:column;gap:8px}
 .smallbtn{padding:8px 10px;}
-.hint{font-size:12px;color:#9aa4b2}
+.hint{font-size:12px;color:var(--muted);}
 
 .ts{color:#9bb4ff;font-size:12px}
 .info{color:#89d4ff}
@@ -378,22 +438,79 @@ body{
   display:none;align-items:center;justify-content:center;padding:20px;
 }
 .modal{
-  width:100%;max-width:420px;background:#07111a;padding:18px;
+  width:100%;max-width:420px;
+  background:var(--card);
+  padding:18px;
   border-radius:12px;border:1px solid rgba(255,255,255,0.02);
   box-shadow:0 10px 30px rgba(2,6,23,0.7);
 }
 .form-row{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
 .input{
   background:#041122;border-radius:8px;padding:10px;width:95%;
-  border:1px solid rgba(255,255,255,0.03);color:#d7eefb;
+  border:1px solid rgba(255,255,255,0.03);color:var(--btn-color);
 }
 .err-text{color:var(--danger);font-weight:700;margin-top:4px}
 
 .modal-actions{display:flex;gap:8px;justify-content:center;margin-top:8px}
 
+/* responsive */
 @media (max-width:720px){
   .row{flex-direction:column}
   .controls{flex-direction:column;align-items:stretch}
+}
+/* iOS-style toggle switch */
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #00c8b8; /* رنگ وقتی روشن است (تم لایت) */
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+.slider.round {
+  border-radius: 28px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
 EOF
 
@@ -405,6 +522,7 @@ const modalCancel = document.getElementById("modalCancel");
 const modalSave = document.getElementById("modalSave");
 const modalErr = document.getElementById("modalErr");
 
+// Modal handlers
 openChange.onclick = () => {
   modalBk.style.display = "flex";
   modalErr.style.display = "none";
@@ -453,9 +571,11 @@ modalSave.onclick = async () => {
   }
 };
 
+// Scroll logs to bottom
 const logsEl = document.getElementById("logs");
 if (logsEl) logsEl.scrollTop = logsEl.scrollHeight;
 
+// Download logs
 function downloadLogs() {
   fetch("/download-logs")
     .then((r) => r.blob())
@@ -468,6 +588,29 @@ function downloadLogs() {
       URL.revokeObjectURL(url);
     })
     .catch((e) => alert("Failed to download: " + e));
+}
+
+// ---------------- Theme switcher ----------------
+const themeToggle = document.getElementById("themeToggle");
+
+// بارگذاری تم از localStorage یا پیشفرض
+let savedTheme = localStorage.getItem("theme") || "dark";
+document.body.classList.add(savedTheme);
+if(themeToggle) themeToggle.checked = (savedTheme === "light");
+
+// تغییر تم هنگام کلیک روی سوییچ
+if(themeToggle){
+  themeToggle.addEventListener("change", () => {
+    if(themeToggle.checked){
+      document.body.classList.remove("dark");
+      document.body.classList.add("light");
+      localStorage.setItem("theme", "light");
+    } else {
+      document.body.classList.remove("light");
+      document.body.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    }
+  });
 }
 EOF
 
